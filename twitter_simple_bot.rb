@@ -3,12 +3,10 @@ require 'twitter'
 
 class TwitterSimpleBot
   ## ツイートの投稿
-  def tweet(text, options={})
-    options = {
-      reply_to_tweet: nil,  # リプライ対象のツイートID
-      reply_to_user: nil,   # リプライ対象のユーザID(screen_name)(配列可)
-      image: nil            # アップロードする画像のパス
-    }.merge(options)
+  ## :reply_to_user -> String
+  ## :reply_to_tweet -> Int
+  ## :image -> String
+  def tweet(text, options = {})
     ## @の追加
     if options[:reply_to_user] != nil
       if options[:reply_to_user].is_a?(String)
@@ -29,7 +27,7 @@ class TwitterSimpleBot
 
   
   ## ユーザ情報の取得。ID指定可能。
-  def user(id=nil)
+  def user(id = nil)
     if id == nil
       return @client.user
     else
@@ -54,26 +52,15 @@ class TwitterSimpleBot
 
   ## キーとかいろいろ突っ込んでアカウントに接続する
   def initialize(config = {})
-    config = {
-      consumer_key: "default",
-      consumer_secret: "default",
-      access_token: "default",
-      access_token_secret: "default",      
-    }.merge(config)
-    # 引数をチェックし、セットされていないものがあれば例外発生
-    if config[:consumer_key] == "default"
+    if config[:consumer_key] == nil
       raise ArgumentError, "please set config[:consumer_key]"
-    elsif config[:consumer_secret] == "default"
+    elsif config[:consumer_secret] == nil
       raise ArgumentError, "please set config[:consumer_secret]"
-    elsif config[:access_token] == "default"
+    elsif config[:access_token] == nil
       raise ArgumentError, "please set config[:access_token]"
-    elsif config[:access_token_secret] == "default"
+    elsif config[:access_token_secret] == nil
       raise ArgumentError, "please set config[:access_token_secret]"
     end
-    # Twitterとのインタフェース作成
     @client = Twitter::REST::Client.new(config)
   end
 end
-
-
-load "test.rb"
