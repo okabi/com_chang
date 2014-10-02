@@ -3,9 +3,6 @@ require 'twitter'
 
 class TwitterSimpleBot
   ## ツイートの投稿
-  ## :reply_to_user -> String
-  ## :reply_to_tweet -> Int
-  ## :image -> String
   def tweet(text, options = {})
     ## @の追加
     if options[:reply_to_user] != nil
@@ -26,16 +23,6 @@ class TwitterSimpleBot
   end
 
   
-  ## ユーザ情報の取得。ID指定可能。
-  def user(id = nil)
-    if id == nil
-      return @client.user
-    else
-      return @client.user(id)
-    end
-  end
-  
-
   ## タイムラインを取得。ID指定等可能。
   def timeline(options)
     options = {
@@ -48,6 +35,42 @@ class TwitterSimpleBot
       return @client.user_timeline(options[:id], :count => options[:count])
     end
   end
+
+
+  ## フォローする。引数無指定はフォロー返しを行う。
+  def follow(user = nil)
+    if user != nil
+      @client.follow(user)
+    else
+      follower_ids = @client.follower_ids
+      friend_ids = @client.friend_ids
+      follower_ids_array = _cursor_to_array(follower_ids)
+      friend_ids_array = _cursor_to_array(friend_ids)
+      unfollowing_follower_ids_array = follower_ids_array - friend_ids_array
+      @client.follow(unfollowing_follower_ids_array)
+    end
+  end
+
+
+  ## ユーザ情報(Twitter::User)の取得。ID指定可能。
+  def user(id = nil)
+    if id == nil
+      return @client.user
+    else
+      return @client.user(id)
+    end
+  end
+
+
+  ## Twitter::Cursor -> Array
+  def _cursor_to_array(cursor)
+    result = []
+    cursor.each do |c|
+      result += [c]
+    end    
+    return result
+  end
+  private :_cursor_to_array
 
 
   ## キーとかいろいろ突っ込んでアカウントに接続する
@@ -64,3 +87,14 @@ class TwitterSimpleBot
     @client = Twitter::REST::Client.new(config)
   end
 end
+
+
+
+load 'test.rb'
+
+
+########################
+# follow:フォロワーかつフレンドでない相手に無限にフォロリク送るので、
+#        NGリスト内の相手には送らないようにすること。
+# unfollow:作っておきたい。
+########################
