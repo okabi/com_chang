@@ -17,6 +17,12 @@ client.tweet("Tweet with TwitterSimpleBot!", :reply_to_user => "okabi13")
 ```
 
 ## メソッド
+* [#コンストラクタ](#コンストラクタ)
+* [#tweet](#tweet)
+* [#timeline](#timeline)
+* [#follow](#follow)
+* [#unfollow](#unfollow)
+* [#user](#user)
 
 ### コンストラクタ
 
@@ -67,7 +73,7 @@ client.tweet("Tweet with TwitterSimpleBot!", :reply_to_user => "okabi13")
 2. フォローしていないフォロワーを全員フォロー(フォロー返し)します。
 
 #### 引数
-* `user`…フォローするユーザID。未指定の場合、フォローしていないフォロワーを全員フォロー(フォロー返し)します。
+* `user`(String)…フォローするユーザID。未指定の場合、フォローしていないフォロワーを全員フォロー(フォロー返し)します。
 
 #### 戻り値
 なし
@@ -79,7 +85,7 @@ client.tweet("Tweet with TwitterSimpleBot!", :reply_to_user => "okabi13")
 2. フォローされていないフレンド(認証ユーザがフォローしている相手)を全員アンフォロー(リムーブ)します。
 
 #### 引数
-* `user`…アンフォローするユーザID。未指定の場合、フォローされていないフレンド(認証ユーザがフォローしている相手)を全員アンフォローします。
+* `user`(String)…アンフォローするユーザID。未指定の場合、フォローされていないフレンド(認証ユーザがフォローしている相手)を全員アンフォローします。
 
 #### 戻り値
 なし
@@ -90,7 +96,7 @@ client.tweet("Tweet with TwitterSimpleBot!", :reply_to_user => "okabi13")
 1. IDから、twitter gem の`Twitter::User`型ユーザ情報を返します。
 
 #### 引数
-* `id`…情報取得するユーザのID。未指定の場合、認証ユーザの情報を取得します。
+* `id`(String)…情報取得するユーザのID。未指定の場合、認証ユーザの情報を取得します。
 
 #### 戻り値
 指定ユーザの `Twitter::User` インスタンス。
