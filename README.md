@@ -4,8 +4,9 @@ Ruby(1.9.3)とtwitter gem(5.11.0)を用いて簡単にTwitter Botが作れるよ
 
 ## コード例
 ```rb
-require 'twitter_simple_bot.rb'
+require './twitter_simple_bot.rb'
 
+config = {}
 config[:consumer_key] = "consumer_key"
 config[:consumer_secret] = "consumer_secret"
 config[:access_token] = "access_token"
