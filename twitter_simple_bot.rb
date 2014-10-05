@@ -52,6 +52,21 @@ class TwitterSimpleBot
   end
 
 
+  ## アンフォローする。引数無指定はリム返しを行う。
+  def unfollow(user = nil)
+    if user != nil
+      @client.unfollow(user)
+    else
+      follower_ids = @client.follower_ids
+      friend_ids = @client.friend_ids
+      follower_ids_array = _cursor_to_array(follower_ids)
+      friend_ids_array = _cursor_to_array(friend_ids)
+      unfollowed_friend_ids_array = friend_ids_array - follower_ids_array
+      @client.unfollow(unfollowed_friend_ids_array)
+    end
+  end
+
+
   ## ユーザ情報(Twitter::User)の取得。ID指定可能。
   def user(id = nil)
     if id == nil
@@ -87,14 +102,3 @@ class TwitterSimpleBot
     @client = Twitter::REST::Client.new(config)
   end
 end
-
-
-
-load 'test.rb'
-
-
-########################
-# follow:フォロワーかつフレンドでない相手に無限にフォロリク送るので、
-#        NGリスト内の相手には送らないようにすること。
-# unfollow:作っておきたい。
-########################
