@@ -9,15 +9,7 @@ class TwitterSimpleStreamBot
       @client.user do |status|
         case status
         when Twitter::Tweet
-          reply_flag = status.user_mentions?
-          to_me_reply_flag = false
-          status.user_mentions.each do |u|
-            if u.screen_name == @user_id
-              to_me_reply_flag = true
-              break
-            end
-          end 
-          if to_me_reply_flag == true
+          if mention_me?(status) == true
             @on_catch_reply.call(status)
           else
             @on_catch_tweet.call(status)
@@ -30,6 +22,16 @@ class TwitterSimpleStreamBot
       puts "Streamingが中断されました"
     end
   end
+
+
+  ## ツイートテキスト中に"@自分"が含まれるか
+  def mention_me?(tweet)
+    tweet.user_mentions.each do |u|
+      return true if u.screen_name == @user_id
+    end     
+    return false
+  end
+  private :mention_me?
 
 
   ## キーとかいろいろ突っ込んでアカウントに接続する
