@@ -46,7 +46,7 @@ client.tweet("Tweet with TwitterSimpleBot!", :reply_to_user => "okabi13")
 #### 引数
 * `text`(String)…ツイートの本文内容。
 * `options`…追加で情報が必要な場合、利用してください。
- * `:reply_to_user`(String or Array(String))…リプライ対象のユーザID(name、@以降の英数字)。配列で渡すと複数の相手にリプライを送ることができます。
+ * `:reply_to_user`(String or Array<String>)…リプライ対象のユーザID(name、@以降の英数字)。配列で渡すと複数の相手にリプライを送ることができます。
  * `:reply_to_tweet`(Integer)…リプライ対象のツイートID。
  * `:image`(String)…ツイートに含める画像のパス。
 
@@ -65,7 +65,7 @@ client.tweet("Tweet with TwitterSimpleBot!", :reply_to_user => "okabi13")
  * `:count`(Integer)…取得するツイート数を指定します。デフォルトは20件です。最大200件だったと思います。
 
 #### 戻り値
-なし
+指定ユーザのタイムライン(Array<`Twitter::Tweet`>)
 
 ### `follow`
 
