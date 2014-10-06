@@ -108,7 +108,7 @@ client.tweet("Tweet with TwitterSimpleBot!", :reply_to_user => "okabi13")
 
 ---------------------------------
 
-# TwitterSimpleBot
+# TwitterSimpleStreamBot
 ## 概要
 Ruby(1.9.3)とtwitter gem(5.11.0)を用いて簡単にStreamによるタイムライン読み込みが出来るようになったものだと思います。
 
@@ -128,7 +128,7 @@ client.stream
 ```
 
 ## メソッド
-* [#コンストラクタ](#コンストラクタ-2)
+* [#コンストラクタ](#コンストラクタ-1)
 * [#stream](#stream)
 
 ### コンストラクタ
