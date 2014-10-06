@@ -1,3 +1,7 @@
+* [TwitterSimpleBot](#twittersimplebot)
+* [TwitterSimpleStreamBot](#twittersimplestreambot)
+
+
 # TwitterSimpleBot
 ## 概要
 Ruby(1.9.3)とtwitter gem(5.11.0)を用いて簡単にTwitter Botが作れるようになったものだと思います。
@@ -101,3 +105,55 @@ client.tweet("Tweet with TwitterSimpleBot!", :reply_to_user => "okabi13")
 
 #### 戻り値
 指定ユーザの `Twitter::User` インスタンス。
+
+---------------------------------
+
+# TwitterSimpleBot
+## 概要
+Ruby(1.9.3)とtwitter gem(5.11.0)を用いて簡単にStreamによるタイムライン読み込みが出来るようになったものだと思います。
+
+## コード例
+```rb
+require './twitter_simple_stream_bot.rb'
+
+config = {}
+config[:consumer_key] = "consumer_key"
+config[:consumer_secret] = "consumer_secret"
+config[:access_token] = "access_token"
+config[:access_token_secret] = "access_token_secret"
+config[:user_id] = "mybot"
+
+client = TwitterSimpleStreamBot.new(config)
+client.stream
+```
+
+## メソッド
+* [#コンストラクタ](#コンストラクタ-2)
+* [#stream](#stream)
+
+### コンストラクタ
+
+##### 引数
+連想配列(ハッシュ)形式で渡します。渡さない引数があっても構いませんが、以下の5つの引数は*どれか1つでも不備がある(渡されない)と例外が発生します*。
+* `:consumer_key`(String)…Twitter Developersから取得できるConsumer Key。
+* `:consumer_secret`(String)…Twitter Developersから取得できるConsumer Secret。
+* `:access_token`(String)…Twitter Developersから取得できるAccess Token。
+* `:access_token_secret`(String)…Twitter Developersから取得できるAccess Token Secret。
+* `:user_id`(String)…Streamを取得するユーザID(name)。
+
+以下の引数は、渡さなくても問題ありません。
+
+* `:on_catch_tweet`(lambda{|`Twitter::Tweet`|})…Streamでツイートを受け取った時に行う処理。受け取ったツイートはLambda式の引数として渡されます。
+* `:on_catch_reply`(lambda{|`Twitter::Tweet`|})…Streamで認証ユーザに対するツイートを受け取った時に行う処理。受け取ったツイートはLambda式の引数として渡されます。
+* `:on_catch_DM`(lambda{|`Twitter::DirectMessage`|})…StreamでDMを受け取った時に行う処理。受け取ったDMはLambda式の引数として渡されます。
+
+### `stream`
+
+#### 用途
+1. Streamを開始します。無限ループです。
+
+#### 引数
+なし
+
+#### 戻り値
+なし
