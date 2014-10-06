@@ -143,9 +143,9 @@ client.stream
 
 以下の引数は、渡さなくても問題ありません。
 
-* `:on_catch_tweet`(lambda{|`Twitter::Tweet`|})…Streamでツイートを受け取った時に行う処理。受け取ったツイートはLambda式の引数として渡されます。
-* `:on_catch_reply`(lambda{|`Twitter::Tweet`|})…Streamで認証ユーザに対するツイートを受け取った時に行う処理。受け取ったツイートはLambda式の引数として渡されます。
-* `:on_catch_DM`(lambda{|`Twitter::DirectMessage`|})…StreamでDMを受け取った時に行う処理。受け取ったDMはLambda式の引数として渡されます。
+* `:on_catch_tweet`(lambda{|`Twitter::Tweet`|})…Streamでツイートを受け取った時に行う処理。受け取ったツイートはLambda式の引数として渡されます。*デフォルトでは、ツイートした人の情報とツイート内容を表示します。*
+* `:on_catch_reply`(lambda{|`Twitter::Tweet`|})…Streamで認証ユーザに対するツイートを受け取った時に行う処理。受け取ったツイートはLambda式の引数として渡されます。*デフォルトでは、ツイートした人の情報とツイート内容を表示します。*
+* `:on_catch_DM`(lambda{|`Twitter::DirectMessage`|})…StreamでDMを受け取った時に行う処理。受け取ったDMはLambda式の引数として渡されます。*デフォルトでは、DM内容を表示します。*
 
 ### `stream`
 
