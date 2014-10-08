@@ -141,7 +141,7 @@ client.stream
 * `:access_token_secret`(String)…Twitter Developersから取得できるAccess Token Secret。
 * `:user_id`(String)…Streamを取得するユーザID(name)。
 
-以下の引数は、渡さなくても問題ありません。
+ここから下の引数は、渡さなくても問題ありません。
 
 * `:on_catch_tweet`(lambda{|`Twitter::Tweet`|})…Streamでツイートを受け取った時に行う処理。受け取ったツイートはLambda式の引数として渡されます。*デフォルトでは、ツイートした人の情報とツイート内容を表示します。*
 * `:on_catch_reply`(lambda{|`Twitter::Tweet`|})…Streamで認証ユーザに対するツイートを受け取った時に行う処理。受け取ったツイートはLambda式の引数として渡されます。*デフォルトでは、ツイートした人の情報とツイート内容を表示します。*
