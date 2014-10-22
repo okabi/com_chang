@@ -5,26 +5,55 @@ require 'sqlite3'
 ## RubyからSQLITEを扱う。
 class SqliteUtil
   ## テーブル情報を返す
-  ## 例. select(hoge_tbl, :columns => name, :where => "id > 5 AND id < 10"])
-  def select(table_name, options = {})
+  def select(options = {})
     sql = "SELECT "
     if options[:columns] == nil
       sql += "*"
-    elsif options[:columns].is_a?(String)
-      sql += options[:columns]
     else
       options[:columns].each do |c|
-        sql += c + ","
+        sql += "#{c},"
       end
       sql.chop!
     end
-    sql += " FROM " + table_name
-    sql += " WHERE " + options[:where] if options[:where] != nil
+    sql += " FROM #{@table_name}"
+    sql += " WHERE #{options[:where]}" if options[:where] != nil
     return sql_exec(sql)
   end
 
   
-  def insert(table_name, options = {})
+  ## テーブルに情報を挿入する
+  def insert(columns, values)
+    sql = "INSERT INTO #{@table_name} ("
+    columns.each do |c|
+      sql += "#{c},"
+    end
+    sql.chop!
+    sql += ") VALUES("
+    values.each do |v|
+      sql += "#{v},"      
+    end
+    sql.chop!
+    sql += ")"
+    return sql_exec(sql)
+  end
+
+
+  ## テーブルの情報を更新する
+  def update(columns, values, where = nil)
+    sql = "UPDATE #{@table_name} SET "
+    columns.length.times do |i|
+      sql += "#{columns[i]} = #{values[i]},"
+    end
+    sql.chop!
+    sql += " WHERE #{where}" if where != nil
+    return sql_exec(sql)
+  end
+
+
+  ## テーブルの情報を削除する
+  def delete(where)
+    sql = "DELETE FROM #{@table_name} WHERE #{where}"
+    return sql_exec(sql)
   end
 
 
@@ -36,11 +65,8 @@ class SqliteUtil
 
 
   ## オープンするDBのパスを指定する
-  def initialize(dbpath)
+  def initialize(dbpath, table_name)
     @db = SQLite3::Database.new(dbpath)
+    @table_name = table_name
   end 
 end
-
-
-su = SqliteUtil.new('./com_chang.db')
-p su.select('markov_tbl', :columns => 'id', :where => 'probability = 1')
