@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+## mecab-rubyを使用。
 require 'MeCab'
 
 ## 形態素解析クラス。とりあえず文字列を形態素に分解するだけ。
