@@ -1,5 +1,8 @@
 * [TwitterSimpleBot](#twittersimplebot)
 * [TwitterSimpleStreamBot](#twittersimplestreambot)
+* [Morpheme](#morpheme)
+* [SQLiteUtil](#sqliteutil)
+* [Markov](#markov)
 
 
 # TwitterSimpleBot
@@ -8,7 +11,7 @@ Ruby(1.9.3)とtwitter gem(5.11.0)を用いて簡単にTwitter Botが作れるよ
 
 ## コード例
 ```rb
-require './twitter_simple_bot.rb'
+require_relative './twitter_simple_bot.rb'
 
 config = {}
 config[:consumer_key] = "consumer_key"
@@ -114,7 +117,7 @@ Ruby(1.9.3)とtwitter gem(5.11.0)を用いて簡単にStreamによるタイム�
 
 ## コード例
 ```rb
-require './twitter_simple_stream_bot.rb'
+require_relative './twitter_simple_stream_bot.rb'
 
 config = {}
 config[:consumer_key] = "consumer_key"
@@ -157,3 +160,44 @@ client.stream
 
 #### 戻り値
 なし
+
+
+---------------------------------
+
+# Morpheme
+## 概要
+Ruby(1.9.3)とmecab-ruby gem(0.97)を用いて簡単に形態素解析出来るようになったものだと思います。
+
+## コード例
+```rb
+require_relative './morpheme.rb'
+
+m = Morpheme.new
+text = "すもももももももものうち"
+arr = m.analyze(text)
+arr.each do |a|
+  puts a
+end
+
+## すもも
+## も
+## もも
+## も
+## もも
+## の
+## うち
+```
+
+## メソッド
+* [#analyze](#analyze)
+
+### `analyze`
+
+#### 用途
+1. 与えられた文字列に対して形態素解析を行い、形態素に分割した配列を返します。
+
+#### 引数
+* `text`(String)…形態素解析したい文字列。
+
+#### 戻り値
+`text`を形態素に分割した配列(Array<String>)
