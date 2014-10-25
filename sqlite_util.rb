@@ -17,7 +17,7 @@ class SqliteUtil
     end
     sql += " FROM #{@table_name}"
     sql += " WHERE #{options[:where]}" if options[:where] != nil
-    return sql_exec(sql)
+    return _sql_exec(sql)
   end
 
   
@@ -34,7 +34,7 @@ class SqliteUtil
     end
     sql.chop!
     sql += ")"
-    return sql_exec(sql)
+    return _sql_exec(sql)
   end
 
 
@@ -46,22 +46,22 @@ class SqliteUtil
     end
     sql.chop!
     sql += " WHERE #{where}" if where != nil
-    return sql_exec(sql)
+    return _sql_exec(sql)
   end
 
 
   ## テーブルの情報を削除する
   def delete(where)
     sql = "DELETE FROM #{@table_name} WHERE #{where}"
-    return sql_exec(sql)
+    return _sql_exec(sql)
   end
 
 
   ## SQL文の実行
-  def sql_exec(sql)
+  def _sql_exec(sql)
     return @db.execute(sql)
   end
-  private :sql_exec
+  private :_sql_exec
 
 
   ## オープンするDBのパスを指定する
