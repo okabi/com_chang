@@ -65,8 +65,8 @@ class SqliteUtil
 
 
   ## オープンするDBのパスを指定する
-  def initialize(dbpath, table_name)
-    @db = SQLite3::Database.new(dbpath)
+  def initialize(db_path, table_name)
+    @db = SQLite3::Database.new(db_path)
     @table_name = table_name
   end 
 end

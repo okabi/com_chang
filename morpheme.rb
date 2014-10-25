@@ -5,7 +5,7 @@ require 'MeCab'
 ## 形態素解析クラス。とりあえず文字列を形態素に分解するだけ。
 class Morpheme
   ## 与えられた文字列を形態素に分解する
-  def analysis(text)
+  def analyze(text)
     n = @parser.parseToNode(text)
     result = []
     while n
