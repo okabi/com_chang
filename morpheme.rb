@@ -10,6 +10,7 @@ class Morpheme
     result = []
     while n
       str = n.surface.to_s
+      str.force_encoding("UTF-8")
       result.push(str) if !(str.empty?)
       n = n.next
     end

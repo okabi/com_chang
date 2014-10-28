@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require_relative './morpheme.rb'
 require_relative './sqlite_util.rb'
+require 'uri'
 
 ## マルコフ連鎖に関連するクラス。
 class Markov
@@ -8,7 +9,6 @@ class Markov
   def store(text)
     text.gsub!(/@/, "＠")
     arr = [@BEGIN] + @parser.analyze(text) + [@END]
-    p arr
     (arr.length - 1).times do |i|
       _store(arr[i], arr[i + 1])
     end
@@ -29,25 +29,21 @@ class Markov
 
   ## 連鎖情報をインスタンス変数とDBに保存
   def _store(back_word, forward_word)
-    puts back_word
-    puts forward_word
     if @markov_hash.include?(back_word)
       if @markov_hash[back_word].include?(forward_word)
         @markov_hash[back_word][forward_word] += 1
-        where = DB_COLUMN_MORPHEME + " = \"" + back_word + "@" + forward_word + "\""
-        @db.update([DB_COLUMN_PROBABILITY], [@markov_hash[back_word][forward_word]], where)
+        where = @DB_COLUMN_MORPHEME + " = \"" + back_word + "@" + forward_word + "\""
+        @db.update([@DB_COLUMN_PROBABILITY], [@markov_hash[back_word][forward_word]], where)
       else
         @markov_hash[back_word].store(forward_word, 1)
-        columns = [DB_COLUMN_MORPHEME, DB_COLUMN_PROBABILITY]
+        columns = [@DB_COLUMN_MORPHEME, @DB_COLUMN_PROBABILITY]
         values = ["\"" + back_word + "@" + forward_word + "\"", 1]
         @db.insert(columns, values)
       end
     else
       @markov_hash.store(back_word, {forward_word => 1})
-      columns = [DB_COLUMN_MORPHEME, DB_COLUMN_PROBABILITY]
+      columns = [@DB_COLUMN_MORPHEME, @DB_COLUMN_PROBABILITY]
       values = ["\"" + back_word + "@" + forward_word + "\"", 1]
-      p columns
-      p values
       @db.insert(columns, values)
     end
   end
