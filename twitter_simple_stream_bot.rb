@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'twitter'
+require 'date'
 
 class TwitterSimpleStreamBot
   ## ストリーミングの実行(無限ループ)
@@ -18,8 +19,20 @@ class TwitterSimpleStreamBot
           @on_catch_DM.call(status)
         end
       end
-    rescue
-      puts "Streamingが中断されました"
+    rescue => e
+      p e.message
+      error_log(e.message)
+      ## ここに、例外発生時のラムダ式を書く
+      retry
+    end
+  end
+
+
+  ## エラーログを出す
+  def error_log(text)
+    File::open("./error_log/#{Date.today.to_s}.txt", "a") do |file|
+      time = Time.now.strftime("%H:%M:%S")
+      file.puts("#{time} #{text}")
     end
   end
 
