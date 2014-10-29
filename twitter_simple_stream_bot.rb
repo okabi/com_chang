@@ -20,9 +20,7 @@ class TwitterSimpleStreamBot
         end
       end
     rescue => e
-      p e.message
-      error_log(e.message)
-      ## ここに、例外発生時のラムダ式を書く
+      @on_exception.call(e)
       retry
     end
   end
@@ -67,6 +65,10 @@ class TwitterSimpleStreamBot
       on_catch_DM: lambda{|tweet|
         text = tweet.text
         puts "[DM]\n  #{text}"
+      },
+      on_exception: lambda{|exception|
+        p exception.message
+        error_log(exception.message)
       }
     }.merge(options)
     if options[:user_id] == nil
@@ -76,6 +78,7 @@ class TwitterSimpleStreamBot
     @on_catch_tweet = options[:on_catch_tweet]
     @on_catch_reply = options[:on_catch_reply]
     @on_catch_DM = options[:on_catch_DM]
+    @on_exception = options[:on_exception]
     config = {}
     config[:consumer_key] = options[:consumer_key]
     config[:consumer_secret] = options[:consumer_secret]
