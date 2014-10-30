@@ -53,7 +53,7 @@ class ComChang
         @client.tweet("ぐはっ #{time}")
         return 1
       elsif text =~ /ping/
-        @client.tweet("pong #{time}")
+        @client.tweet("@#{sname} pong #{time}")
         return 2
       end
     end
