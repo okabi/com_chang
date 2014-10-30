@@ -4,8 +4,6 @@ require_relative './twitter_simple_stream_bot.rb'
 require_relative './markov.rb'
 require_relative './sqlite_util.rb'
 
-## 制御信号ファイルを用意して、killコマンドが実行されたら
-#  一切のコンちゃん関係ファイルを動かさないようにしよう
 ## リプライに反応するようにしよう
 ## あとはスマホのメモ帳に
 
@@ -50,10 +48,13 @@ class ComChang
     sname = tweet.user.screen_name.to_s
     text = tweet.text.to_s
     if sname == "okabi13" || sname == "abiko131"
+      time = Time.now.strftime("%H:%M:%S")
       if text =~ /kill/
-        time = Time.now.strftime("%H:%M:%S")
-        @client.tweet("ぐはっ#{time}")
+        @client.tweet("ぐはっ #{time}")
         return 1
+      elsif text =~ /ping/
+        @client.tweet("pong #{time}")
+        return 2
       end
     end
     return 0
@@ -72,6 +73,7 @@ class ComChang
     return false if sname == @user_id
     # nameかscreen_nameに"bot","BOT","Bot"が含まれる場合は保存対象から外す
     return false if sname =~ /([Bb]ot)|(BOT)/
+    return false if name =~ /([Bb]ot)|(BOT)/
     return true
   end
 
