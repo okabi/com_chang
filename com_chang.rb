@@ -4,6 +4,8 @@ require_relative './twitter_simple_stream_bot.rb'
 require_relative './markov.rb'
 require_relative './sqlite_util.rb'
 
+## 制御信号ファイルを用意して、killコマンドが実行されたら
+#  一切のコンちゃん関係ファイルを動かさないようにしよう
 ## リプライに反応するようにしよう
 ## あとはスマホのメモ帳に
 
@@ -43,6 +45,21 @@ class ComChang
   end
 
 
+  ## コマンドならそれに従う
+  def command(tweet)
+    sname = tweet.user.screen_name.to_s
+    text = tweet.text.to_s
+    if sname == "okabi13" || sname == "abiko131"
+      if text =~ /kill/
+        time = Time.now.strftime("%H:%M:%S")
+        @client.tweet("ぐはっ#{time}")
+        return 1
+      end
+    end
+    return 0
+  end
+
+
   ## 保存すべきtweetの場合はtrueを返す
   def should_save?(tweet)
     name = tweet.user.name.to_s
@@ -52,7 +69,7 @@ class ComChang
     # "RT "から始まる場合はダメ
     return false if text =~ /^RT /
     # 自分のツイートは保存対象から外す
-    return false if sname == "lunatic_club"
+    return false if sname == @user_id
     # nameかscreen_nameに"bot","BOT","Bot"が含まれる場合は保存対象から外す
     return false if sname =~ /([Bb]ot)|(BOT)/
     return true
@@ -97,7 +114,15 @@ class ComChang
 
     # StreamingでReplyを受け取った時の処理
     config[:on_catch_reply] = lambda{|tweet|
-      save_tweet(tweet, "reply")
+      message = command(tweet)
+      if message == 0
+        save_tweet(tweet, "reply")
+      elsif message == 1
+        File::open("./state.txt", "w") do |file|
+          file.puts("DEAD")
+        end
+        exit
+      end
     }
 
     # Streamingで例外を受け取った時の処理
