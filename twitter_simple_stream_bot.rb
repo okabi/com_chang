@@ -17,6 +17,8 @@ class TwitterSimpleStreamBot
           end
         when Twitter::DirectMessage
           @on_catch_DM.call(status)
+        when Twitter::Streaming::Event
+          @on_catch_follow.call(status) if status.name == :follow          
         end
       end
     rescue => e
@@ -66,6 +68,9 @@ class TwitterSimpleStreamBot
         text = tweet.text
         puts "[DM]\n  #{text}"
       },
+      on_catch_follow: lambda{|event|
+        puts "フォローされました"
+      },
       on_exception: lambda{|exception|
         p exception.message
         error_log(exception.message)
@@ -78,6 +83,7 @@ class TwitterSimpleStreamBot
     @on_catch_tweet = options[:on_catch_tweet]
     @on_catch_reply = options[:on_catch_reply]
     @on_catch_DM = options[:on_catch_DM]
+    @on_catch_follow = options[:on_catch_follow]
     @on_exception = options[:on_exception]
     config = {}
     config[:consumer_key] = options[:consumer_key]

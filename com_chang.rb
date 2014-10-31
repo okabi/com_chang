@@ -4,9 +4,6 @@ require_relative './twitter_simple_stream_bot.rb'
 require_relative './markov.rb'
 require_relative './sqlite_util.rb'
 
-## リプライに反応するようにしよう
-## あとはスマホのメモ帳に
-
 ## コンちゃん本体
 class ComChang
   ## Streamingの実行
@@ -127,6 +124,16 @@ class ComChang
       end
     }
 
+    # StreamingでFollowを受け取った時の処理
+    config[:on_catch_follow] = lambda{|event|
+      if event.source.id == @user_num
+        puts "[follow] フォローを返しました。"
+      else
+        puts "[follow] フォローを受け取りました。"
+        @client.follow(event.source)
+      end
+    }
+
     # Streamingで例外を受け取った時の処理
     config[:on_exception] = lambda{|exception|
       p exception.message
@@ -141,5 +148,6 @@ class ComChang
     @user_id = user_id
     @stream = TwitterSimpleStreamBot.new(config)
     @client = TwitterSimpleBot.new(config_rest)
+    @user_num = @client.user.id
   end
 end
