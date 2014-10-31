@@ -2,6 +2,7 @@
 require_relative './twitter_simple_bot.rb'
 require_relative './twitter_simple_stream_bot.rb'
 require_relative './markov.rb'
+require_relative './markov_creator.rb'
 require_relative './sqlite_util.rb'
 
 ## コンちゃん本体
@@ -116,6 +117,12 @@ class ComChang
       message = command(tweet)
       if message == 0
         save_tweet(tweet, "reply")
+        mc = MarkovCreator.new
+        tweets = @client.timeline(:id => tweet.user.id, :count => 200)
+        tweets.each do |t|
+          mc.store(t.text)
+        end
+        @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
       elsif message == 1
         File::open("./state.txt", "w") do |file|
           file.puts("DEAD")
