@@ -120,7 +120,7 @@ class ComChang
         mc = MarkovCreator.new
         tweets = @client.timeline(:id => tweet.user.id, :count => 200)
         tweets.each do |t|
-          mc.store(t.text)
+          mc.store(validate(t.text))
         end
         @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
       elsif message == 1
