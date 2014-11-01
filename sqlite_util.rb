@@ -4,6 +4,25 @@ require 'sqlite3'
 
 ## RubyからSQLITEを扱う。
 class SqliteUtil
+  ## テーブルを作成する
+  def create(tbl, columns, attrs)
+    sql = "CREATE TABLE #{tbl} ("
+    columns.length.times do |i|
+      sql += " #{columns[i]} #{attrs[i]},"
+    end
+    sql.chop!
+    sql += ")"
+    return _sql_exec(sql)
+  end
+
+
+  ## テーブルを削除する
+  def drop(tbl)
+    sql = "DROP TABLE #{tbl}"
+    return _sql_exec(sql)    
+  end
+
+
   ## テーブル情報を返す
   def select(options = {})
     sql = "SELECT "
