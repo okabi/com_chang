@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+require 'date'
 require_relative './twitter_simple_bot.rb'
 require_relative './twitter_simple_stream_bot.rb'
 require_relative './markov.rb'
 require_relative './markov_creator.rb'
 require_relative './sqlite_util.rb'
 
-## ツイート保存テーブルは月毎に変更する
 ## 形態素保存テーブルを2つ作って対応する
 ## おはよう、おやすみ、ただいま、帰宅などに反応する
 
@@ -29,7 +29,22 @@ class ComChang
       text.gsub!("'", "")
       puts "  [#{message}]保存 -> #{text}"
       @markov.store(text)
-      @db.insert(["user", "tweet"], ["'#{id}'", "'#{text}'"])
+      store_tweet_db(tweet)
+    end
+  end
+
+
+  ## DBにツイート情報を保存する
+  def store_tweet_db(tweet)
+    begin
+      @db.insert(["user", "tweet"], ["'#{tweet.user.id}'", "'#{tweet.text.to_s}'"])
+    rescue
+      date = Date.today.strftime("%Y%m")
+      @db.create("tweet#{date}_tbl", 
+                 ['id', 'user', 'tweet'],
+                 ['INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL', 'TEXT NOT NULL', 'TEXT NOT NULL'])
+      @db = SqliteUtil.new(@db_path, 'tweet#{date}_tbl')
+      retry
     end
   end
 
@@ -63,6 +78,17 @@ class ComChang
       end
     end
     return 0
+  end
+
+
+  ## ツイートに対してリプライする
+  def reply(tweet)
+    mc = MarkovCreator.new
+    tweets = @client.timeline(:id => tweet.user.id, :count => 200)
+    tweets.each do |t|
+      mc.store(validate(t.text))
+    end
+    @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
   end
 
 
@@ -122,7 +148,8 @@ class ComChang
     
     # マルコフ連鎖・およびSQLite操作インスタンスの宣言
     @markov = Markov.new(db_path, 'markov_tbl')
-    @db = SqliteUtil.new(db_path, 'tweet_tbl')
+    date = Date.today.strftime("%Y%m")
+    @db = SqliteUtil.new(db_path, 'tweet#{date}_tbl')
 
     # StreamingでTweetを受け取った時の処理
     config[:on_catch_tweet] = lambda{|tweet|
@@ -134,12 +161,7 @@ class ComChang
       message = command(tweet)
       if message == 0 && should_reply?(tweet) == true
         save_tweet(tweet, "reply")
-        mc = MarkovCreator.new
-        tweets = @client.timeline(:id => tweet.user.id, :count => 200)
-        tweets.each do |t|
-          mc.store(validate(t.text))
-        end
-        @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
+        reply(tweet)
       elsif message == 1
         File::open("./state.txt", "w") do |file|
           file.puts("DEAD")
@@ -170,6 +192,7 @@ class ComChang
     
     # 初期化〜〜〜〜〜〜
     @user_id = user_id
+    @db_path = db_path
     @stream = TwitterSimpleStreamBot.new(config)
     @client = TwitterSimpleBot.new(config_rest)
     @user_num = @client.user.id
