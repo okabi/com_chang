@@ -5,6 +5,12 @@ require_relative './markov.rb'
 require_relative './markov_creator.rb'
 require_relative './sqlite_util.rb'
 
+## ダブルクォーテーションを読むとSQLITEでエラー発生する
+## リプライ反応時のマルコフ連鎖対象に「RT」が開始文字として含まれるけど消すべき
+## ツイート保存テーブルは月毎に変更する
+## 形態素保存テーブルを2つ作って対応する
+## おはよう、おやすみ、ただいま、帰宅などに反応する
+
 ## コンちゃん本体
 class ComChang
   ## Streamingの実行
@@ -31,6 +37,8 @@ class ComChang
 
   ## tweet本文から保存対象外の文字列を省いて返す
   def validate(text)
+    # 先頭のRT は消す
+    text = text.gsub(/^RT /, "")
     # @hogeは消す
     text = text.gsub(/@(\w)+/, "")
     # URLは消す
@@ -63,7 +71,6 @@ class ComChang
   def should_save?(tweet)
     name = tweet.user.name.to_s
     sname = tweet.user.screen_name.to_s
-    id = tweet.user.id
     text = tweet.text.to_s
     # "RT "から始まる場合はダメ
     return false if text =~ /^RT /
@@ -73,6 +80,17 @@ class ComChang
     return false if sname =~ /([Bb]ot)|(BOT)/
     return false if name =~ /([Bb]ot)|(BOT)/
     return true
+  end
+
+
+  ## リプライを返すべきtweetの場合はtrueを返す
+  def should_reply?(tweet)
+    sname = tweet.user.screen_name.to_s
+    text = tweet.text.to_s
+    # "RT "から始まる場合はスルー
+    return false if text =~ /^RT /
+    # 自分のリプライは返信対象から外す(そもそもリプライ飛ばさないけど…)
+    return false if sname == @user_id
   end
 
 
@@ -115,7 +133,7 @@ class ComChang
     # StreamingでReplyを受け取った時の処理
     config[:on_catch_reply] = lambda{|tweet|
       message = command(tweet)
-      if message == 0
+      if message == 0 && should_reply?(tweet) == true
         save_tweet(tweet, "reply")
         mc = MarkovCreator.new
         tweets = @client.timeline(:id => tweet.user.id, :count => 200)
