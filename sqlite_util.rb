@@ -70,8 +70,13 @@ class SqliteUtil
 
 
   ## テーブルの情報を削除する
-  def delete(where)
-    sql = "DELETE FROM #{@table_name} WHERE #{where}"
+  def delete(where = nil)
+    sql = ""
+    if where == nil
+      sql = "DELETE FROM #{@table_name}"      
+    else
+      sql = "DELETE FROM #{@table_name} WHERE #{where}"
+    end
     return _sql_exec(sql)
   end
 
