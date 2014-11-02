@@ -29,21 +29,23 @@ class Markov
 
   ## 連鎖情報をインスタンス変数とDBに保存
   def _store(back_word, forward_word)
+    b = back_word.gsub("'", "''")
+    f = forward_word.gsub("'", "''")    
     if @markov_hash.include?(back_word)
       if @markov_hash[back_word].include?(forward_word)
         @markov_hash[back_word][forward_word] += 1
-        where = @DB_COLUMN_MORPHEME + " = '" + back_word + "@" + forward_word + "'"
+        where = "#{@DB_COLUMN_MORPHEME} = '#{b}@#{f}'"
         @db.update([@DB_COLUMN_PROBABILITY], [@markov_hash[back_word][forward_word]], where)
       else
         @markov_hash[back_word].store(forward_word, 1)
         columns = [@DB_COLUMN_MORPHEME, @DB_COLUMN_PROBABILITY]
-        values = ["'" + back_word + "@" + forward_word + "'", 1]
+        values = ["'#{b}@#{f}'", 1]
         @db.insert(columns, values)
       end
     else
       @markov_hash.store(back_word, {forward_word => 1})
       columns = [@DB_COLUMN_MORPHEME, @DB_COLUMN_PROBABILITY]
-      values = ["'" + back_word + "@" + forward_word + "'", 1]
+      values = ["'#{b}@#{f}'", 1]
       @db.insert(columns, values)
     end
   end

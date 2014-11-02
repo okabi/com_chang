@@ -6,9 +6,6 @@ require_relative './markov.rb'
 require_relative './markov_creator.rb'
 require_relative './sqlite_util.rb'
 
-## 形態素保存テーブルを2つ作って対応する
-## おはよう、おやすみ、ただいま、帰宅などに反応する
-
 ## コンちゃん本体
 class ComChang
   ## Streamingの実行
@@ -26,24 +23,26 @@ class ComChang
     puts "@#{sname}(#{name})(#{id}): #{text}"
     if should_save?(tweet) == true
       text = validate(text)
-      text.gsub!("'", "")
       puts "  [#{message}]保存 -> #{text}"
-      @markov.store(text)
-      store_tweet_db(tweet)
+      @markov1.store(text)
+      @markov2.store(text)
+      store_tweet(tweet)
     end
   end
 
 
   ## DBにツイート情報を保存する
-  def store_tweet_db(tweet)
+  def store_tweet(tweet)
     begin
-      @db.insert(["user", "tweet"], ["'#{tweet.user.id}'", "'#{tweet.text.to_s}'"])
+      text = tweet.text.to_s.gsub("'", "''")
+      @db.insert(["user", "tweet"], ["'#{tweet.user.id}'", "'#{text}'"])
     rescue
       date = Date.today.strftime("%Y%m")
-      @db.create("tweet#{date}_tbl", 
+      @tweet_tbl = "tweet#{date}_tbl"
+      @db.create(@tweet_tbl, 
                  ['id', 'user', 'tweet'],
                  ['INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL', 'TEXT NOT NULL', 'TEXT NOT NULL'])
-      @db = SqliteUtil.new(@db_path, 'tweet#{date}_tbl')
+      @db = SqliteUtil.new(@db_path, @tweet_tbl)
       retry
     end
   end
@@ -121,7 +120,22 @@ class ComChang
 
   ## 2次マルコフ連鎖でツイートする
   def tweet_markov
-    @client.tweet(@markov.create)
+    yesterday = Time.now.to_i - (24 * 3600)
+    y_index = (yesterday % 14) / 7
+    today = Time.now.to_i / (24 * 3600)
+    tbl_index = (today % 14) / 7
+    if y_index != tbl_index
+      if y_index == 0
+        @markov0.delete
+      else
+        @markov1.delete
+      end
+    end
+    if tbl_index == 0
+      @client.tweet(@markov0.create)
+    else
+      @client.tweet(@markov1.create)
+    end
   end
 
 
@@ -147,9 +161,12 @@ class ComChang
     config[:user_id] = user_id
     
     # マルコフ連鎖・およびSQLite操作インスタンスの宣言
-    @markov = Markov.new(db_path, 'markov_tbl')
+    @db_path = db_path
+    @markov0 = Markov.new(@db_path, 'markov0_tbl')
+    @markov1 = Markov.new(@db_path, 'markov1_tbl')
     date = Date.today.strftime("%Y%m")
-    @db = SqliteUtil.new(db_path, 'tweet#{date}_tbl')
+    @tweet_tbl = "tweet#{date}_tbl"
+    @db = SqliteUtil.new(@db_path, @tweet_tbl)
 
     # StreamingでTweetを受け取った時の処理
     config[:on_catch_tweet] = lambda{|tweet|
@@ -192,7 +209,6 @@ class ComChang
     
     # 初期化〜〜〜〜〜〜
     @user_id = user_id
-    @db_path = db_path
     @stream = TwitterSimpleStreamBot.new(config)
     @client = TwitterSimpleBot.new(config_rest)
     @user_num = @client.user.id
