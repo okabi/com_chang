@@ -5,8 +5,6 @@ require_relative './markov.rb'
 require_relative './markov_creator.rb'
 require_relative './sqlite_util.rb'
 
-## ダブルクォーテーションを読むとSQLITEでエラー発生する
-## リプライ反応時のマルコフ連鎖対象に「RT」が開始文字として含まれるけど消すべき
 ## ツイート保存テーブルは月毎に変更する
 ## 形態素保存テーブルを2つ作って対応する
 ## おはよう、おやすみ、ただいま、帰宅などに反応する
@@ -28,9 +26,10 @@ class ComChang
     puts "@#{sname}(#{name})(#{id}): #{text}"
     if should_save?(tweet) == true
       text = validate(text)
+      text.gsub!("'", "")
       puts "  [#{message}]保存 -> #{text}"
       @markov.store(text)
-      @db.insert(["user", "tweet"], ["\"#{id}\"", "\"#{text}\""])
+      @db.insert(["user", "tweet"], ["'#{id}'", "'#{text}'"])
     end
   end
 
