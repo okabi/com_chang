@@ -24,8 +24,8 @@ class ComChang
     if should_save?(tweet) == true
       text = validate(text)
       puts "  [#{message}]保存 -> #{text}"
+      @markov0.store(text)
       @markov1.store(text)
-      @markov2.store(text)
       store_tweet(tweet)
     end
   end
@@ -115,6 +115,7 @@ class ComChang
     return false if text =~ /^RT /
     # 自分のリプライは返信対象から外す(そもそもリプライ飛ばさないけど…)
     return false if sname == @user_id
+    return true
   end
 
 
