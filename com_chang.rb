@@ -87,7 +87,11 @@ class ComChang
     tweets.each do |t|
       mc.store(validate(t.text))
     end
-    @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
+    begin
+      @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
+    rescue
+      retry
+    end
   end
 
 
