@@ -34,6 +34,11 @@ class ComChang
   ## DBにツイート情報を保存する
   def store_tweet(tweet)
     begin
+      date = Date.today.strftime("%Y%m")
+      if @tweet_tbl != "tweet#{date}_tbl"
+        @tweet_tbl = "tweet#{date}_tbl"              
+        @db = SqliteUtil.new(@db_path, @tweet_tbl)
+      end
       text = tweet.text.to_s.gsub("'", "''")
       @db.insert(["user", "tweet"], ["'#{tweet.user.id}'", "'#{text}'"])
     rescue
