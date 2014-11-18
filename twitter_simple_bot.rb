@@ -67,6 +67,12 @@ class TwitterSimpleBot
   end
 
 
+  ## ツイートIDを指定してふぁぼる。
+  def favorite(id)
+    @client.favorite(id)
+  end
+
+
   ## ユーザ情報(Twitter::User)の取得。ID指定可能。
   def user(id = nil)
     if id == nil

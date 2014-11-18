@@ -14,7 +14,8 @@ class ComChang
   end
 
 
-  ## tweetを受け取って、形態素に分割してDBに保存する
+  ## tweetを受け取って、形態素に分割して適切なDBに保存する。
+  #  反応ワードが含まれる場合、IDnumを返す。含まれない場合、nilを返す。
   def save_tweet(tweet, message)
     name = tweet.user.name
     sname = tweet.user.screen_name
@@ -24,14 +25,23 @@ class ComChang
     if should_save?(tweet) == true
       text = validate(text)
       puts "  [#{message}]保存 -> #{text}"
-      @markov0.store(text)
-      @markov1.store(text)
       store_tweet(tweet)
+      type = tweet_type(tweet)
+      if type == nil
+        @markov0.store(text)
+        @markov1.store(text)
+      else
+        puts "========================= #{@REG[type][0]} ========================="
+        @special_word_markov[type].store(text) if @REG[type][1] =~ /markov/
+        @client.favorite(tweet.id) if @REG[type][1] =~ /fav/        
+        return type
+      end
     end
+    return nil
   end
 
 
-  ## DBにツイート情報を保存する
+  ## DBにツイート情報(Full)を保存する
   def store_tweet(tweet)
     begin
       date = Date.today.strftime("%Y%m")
@@ -67,7 +77,7 @@ class ComChang
   end
 
 
-  ## コマンドならそれに従う
+  ## コマンドなら0以外を返す
   def command(tweet)
     sname = tweet.user.screen_name.to_s
     text = tweet.text.to_s
@@ -85,18 +95,70 @@ class ComChang
   end
 
 
-  ## ツイートに対してリプライする
-  def reply(tweet)
-    mc = MarkovCreator.new
-    tweets = @client.timeline(:id => tweet.user.id, :count => 200)
-    tweets.each do |t|
-      mc.store(validate(t.text))
+  ## 反応ワードに応じた、ツイートすべき文を返す。
+  #  typeは@REGのIDnum。すなわち反応ワード。nilなら普通のマルコフ連鎖。
+  def create_special_text(type = nil)
+    if type == nil
+      yesterday = Time.now.to_i - (24 * 3600)
+      y_index = (yesterday % 14) / 7
+      today = Time.now.to_i / (24 * 3600)
+      tbl_index = (today % 14) / 7
+      if y_index != tbl_index
+        if y_index == 0
+          @markov0.delete
+        else
+          @markov1.delete
+        end
+      end
+      if tbl_index == 0
+        return @markov0.create
+      else
+        return @markov1.create
+      end
+    else
+      if @REG[type][1] =~ /markov/
+        return @special_word_markov[type].create
+      elsif @REG[type][1] =~ /ohchinchin/
+        return "チン・チン"
+      end
     end
-    begin
-      @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
-    rescue
-      retry
+  end
+
+
+  ## ツイートに対してリプライする。
+  #  typeは@REGのIDnum。すなわち反応ワード。nilなら普通にツイートする。
+  def reply(tweet, type = nil)
+    if type == nil
+      mc = MarkovCreator.new
+      tweets = @client.timeline(:id => tweet.user.id, :count => 200)
+      tweets.each do |t|
+        mc.store(validate(t.text))
+      end
+      begin
+        @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
+      rescue
+        retry
+      end
+    else
+      begin        
+        @client.tweet(create_special_text(type), :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
+      rescue
+        retry
+      end      
     end
+  end
+
+
+  ## 反応ワードが含まれるツイートの場合、IDnumを返す。
+  #  返すIDは、IDの小さいものが優先
+  #  反応ワードが含まれない場合、nilを返す。
+  def tweet_type(text)
+    @REG.length.times do |i|
+      if text =~ @REG[i][2]
+        return i
+      end
+    end
+    return nil
   end
 
 
@@ -128,24 +190,10 @@ class ComChang
   end
 
 
-  ## 2次マルコフ連鎖でツイートする
-  def tweet_markov
-    yesterday = Time.now.to_i - (24 * 3600)
-    y_index = (yesterday % 14) / 7
-    today = Time.now.to_i / (24 * 3600)
-    tbl_index = (today % 14) / 7
-    if y_index != tbl_index
-      if y_index == 0
-        @markov0.delete
-      else
-        @markov1.delete
-      end
-    end
-    if tbl_index == 0
-      @client.tweet(@markov0.create)
-    else
-      @client.tweet(@markov1.create)
-    end
+  ## 2次マルコフ連鎖でツイートする。
+  #  typeは@REGのIDnum。すなわち反応ワード。nilなら普通にツイートする。
+  def tweet_markov(type = nil)
+    @client.tweet(create_special_text(type))
   end
 
 
@@ -169,6 +217,14 @@ class ComChang
     config[:access_token] = access_token
     config[:access_token_secret] = access_token_secret
     config[:user_id] = user_id
+
+    # 反応ワードの準備
+    @REG = [["chinko", "markov|fav", Regexp.new("ちんこ|ちんぽ|チンコ|チンポ|(ち|チ)[ー〜]*(ん|ン)(・)*(ち|チ)[ー〜]*(ん|ン)|chin[- 　]*chin")],
+            ["ohchinchin", "ohchinchin", Regexp.new("(oh|Oh|OH|[おぉオォｵｫ][おぉオォｵｫうぅウゥｳｩー〜~]+)(・|\.|…|。|、|！|!|？|\?|ー|〜|~)*$")],
+            ["ohayou", "markov", Regexp.new("おはよ")],
+            ["oyasumi", "markov", Regexp.new("おやすみ|親炭")],
+            ["com_chang", "fav", Regexp.new("コン(ちゃん|さん)")]
+           ]
     
     # マルコフ連鎖・およびSQLite操作インスタンスの宣言
     @db_path = db_path
@@ -177,18 +233,32 @@ class ComChang
     date = Date.today.strftime("%Y%m")
     @tweet_tbl = "tweet#{date}_tbl"
     @db = SqliteUtil.new(@db_path, @tweet_tbl)
+    @special_word_markov = []
+    @REG.length.times do |i|
+      if @REG[i][1] =~ /markov/
+        @special_word_markov.push(Markov.new(@db_path, "#{@REG[i][0]}_tbl"))
+      else 
+        @special_word_markov.push(nil)
+      end
+    end
 
     # StreamingでTweetを受け取った時の処理
     config[:on_catch_tweet] = lambda{|tweet|
-      save_tweet(tweet, "tweet")
+      type = save_tweet(tweet, "tweet")
+      if type != nil
+        if @REG[type][1] =~ /markov/ || @REG[type][1] =~ /ohchinchin/
+          reply(tweet, type)
+        end
+      end
     }
 
     # StreamingでReplyを受け取った時の処理
     config[:on_catch_reply] = lambda{|tweet|
       message = command(tweet)
       if message == 0 && should_reply?(tweet) == true
-        save_tweet(tweet, "reply")
-        reply(tweet)
+        type = save_tweet(tweet, "reply")
+        type = nil if @REG[type][1] =~ /markov/ || @REG[type][1] =~ /ohchinchin/
+        reply(tweet, type)
       elsif message == 1
         File::open("./state.txt", "w") do |file|
           file.puts("DEAD")
