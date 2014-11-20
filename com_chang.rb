@@ -126,25 +126,44 @@ class ComChang
 
 
   ## ツイートに対してリプライする。
+  #  最近3分間に5回以上リプライを返した相手には返さない。
   #  typeは@REGのIDnum。すなわち反応ワード。nilなら普通にツイートする。
   def reply(tweet, type = nil)
-    if type == nil
-      mc = MarkovCreator.new
-      tweets = @client.timeline(:id => tweet.user.id, :count => 200)
-      tweets.each do |t|
-        mc.store(validate(t.text))
-      end
-      begin
-        @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
-      rescue
-        retry
+    sname = tweet.user.screen_name
+    should_reply = true
+    now = Time.now.to_i
+    if @reply_history[sname].length == 5
+      if now - @reply_history[sname][0] <= 3 * 60
+        should_reply = false
+      else
+        4.times do |i|
+          @reply_history[sname][i] = @reply_history[sname][i + 1]
+        end
+        @reply_history[sname].delete_at(-1)
+        @reply_history[sname].push(now)
       end
     else
-      begin        
-        @client.tweet(create_special_text(type), :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
-      rescue
-        retry
-      end      
+      @reply_history[sname].push(now)
+    end
+    if should_reply == true
+      if type == nil
+        mc = MarkovCreator.new
+        tweets = @client.timeline(:id => tweet.user.id, :count => 200)
+        tweets.each do |t|
+          mc.store(validate(t.text))
+        end
+        begin
+          @client.tweet(mc.create, :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
+        rescue
+          retry
+        end
+      else
+        begin        
+          @client.tweet(create_special_text(type), :reply_to_user => tweet.user.screen_name, :reply_to_tweet => tweet.id)
+        rescue
+          retry
+        end      
+      end
     end
   end
 
@@ -220,7 +239,7 @@ class ComChang
 
     # 反応ワードの準備
     @REG = [["chinko", "markov|fav", Regexp.new("ちんこ|ちんぽ|チンコ|チンポ|(ち|チ)[ー〜]*(ん|ン)(・)*(ち|チ)[ー〜]*(ん|ン)|chin[- 　]*chin")],
-            ["ohchinchin", "ohchinchin", Regexp.new("(oh|Oh|OH|[おぉオォｵｫ][おぉオォｵｫうぅウゥｳｩー〜~]+)(・|\.|…|。|、|！|!|？|\?|ー|〜|~)*$")],
+            ["ohchinchin", "ohchinchin", Regexp.new("(oh|Oh|OH|[おぉオォｵｫ][おぉオォｵｫうぅウゥｳｩー〜~]+)(・|\.|…|。|、|！|!|？|ー|〜|~)*$")],
             ["ohayou", "markov", Regexp.new("おはよ")],
             ["oyasumi", "markov", Regexp.new("おやすみ|親炭")],
             ["com_chang", "fav", Regexp.new("コン(ちゃん|さん)")]
@@ -289,6 +308,8 @@ class ComChang
     
     # 初期化〜〜〜〜〜〜
     @user_id = user_id
+    # ↓[screen_name, リプライ送信時間(int)]の配列
+    @reply_history = []
     @stream = TwitterSimpleStreamBot.new(config)
     @client = TwitterSimpleBot.new(config_rest)
     @user_num = @client.user.id
