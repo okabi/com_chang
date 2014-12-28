@@ -243,9 +243,9 @@ class ComChang
 
     # 反応ワードの準備
     @REG = [["chinko", "markov|fav", Regexp.new("ちんこ|ちんぽ|チンコ|チンポ|(ち|チ)[ー〜]*(ん|ン)(・)*(ち|チ)[ー〜]*(ん|ン)|chin[- 　]*chin")],
-            ["ohchinchin", "ohchinchin", Regexp.new("(oh|Oh|OH|[おぉオォｵｫ][おぉオォｵｫうぅウゥｳｩー〜~]+)(・|\.|…|。|、|！|!|？|ー|〜|~)*$")],
-            ["ohayou", "markov", Regexp.new("おはよ")],
-            ["oyasumi", "markov", Regexp.new("おやすみ|親炭")],
+            ["ohchinchin", "ohchinchin|tl", Regexp.new("(oh|Oh|OH|[おぉオォｵｫ][おぉオォｵｫうぅウゥｳｩー〜~]+)(・|\.|…|。|、|！|!|？|ー|〜|~)*$")],
+            ["ohayou", "markov|tl", Regexp.new("おはよ")],
+            ["oyasumi", "markov|tl", Regexp.new("おやすみ|親炭")],
             ["com_chang", "fav", Regexp.new("コン(ちゃん|さん)")]
            ]
     
@@ -269,7 +269,7 @@ class ComChang
     config[:on_catch_tweet] = lambda{|tweet|
       type = save_tweet(tweet, "tweet")
       if type != nil
-        if @REG[type][1] =~ /markov/ || @REG[type][1] =~ /ohchinchin/
+        if @REG[type][1] =~ /tl/
           reply(tweet, type)
         end
       end
