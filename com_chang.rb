@@ -243,7 +243,7 @@ class ComChang
 
     # 反応ワードの準備
     @REG = [["chinko", "markov|fav", Regexp.new("ちんこ|ちんぽ|チンコ|チンポ|(ち|チ)[ー〜]*(ん|ン)(・)*(ち|チ)[ー〜]*(ん|ン)|chin[- 　]*chin")],
-            ["ohchinchin", "ohchinchin|tl", Regexp.new("(oh|Oh|OH|[おぉオォｵｫ][おぉオォｵｫうぅウゥｳｩー〜~]+)(・|\.|…|。|、|！|!|？|ー|〜|~)*$")],
+            ["ohchinchin", "ohchinchin|tl", Regexp.new("(oh|Oh|OH|[おぉオォｵｫ][おぉオォｵｫうぅウゥｳｩー〜~]+)(・|\\.|…|。|、|！|!|？|\\?|ー|〜|~)*$")],
             ["ohayou", "markov|tl", Regexp.new("おはよ")],
             ["oyasumi", "markov|tl", Regexp.new("おやすみ|親炭")],
             ["com_chang", "fav", Regexp.new("コン(ちゃん|さん)")]
