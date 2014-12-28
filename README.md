@@ -1,3 +1,6 @@
+## memo
+* 何らかの理由で死んだ場合、自動で復帰するような仕組みを作っておきたい
+
 * [TwitterSimpleBot](#twittersimplebot)
 * [TwitterSimpleStreamBot](#twittersimplestreambot)
 * [Morpheme](#morpheme)

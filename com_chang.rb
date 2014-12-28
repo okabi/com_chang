@@ -26,7 +26,7 @@ class ComChang
       text = validate(text)
       puts "  [#{message}]保存 -> #{text}"
       store_tweet(tweet)
-      type = tweet_type(tweet)
+      type = tweet_type(text)
       if type == nil
         @markov0.store(text)
         @markov1.store(text)
@@ -132,18 +132,22 @@ class ComChang
     sname = tweet.user.screen_name
     should_reply = true
     now = Time.now.to_i
-    if @reply_history[sname].length == 5
-      if now - @reply_history[sname][0] <= 3 * 60
-        should_reply = false
-      else
-        4.times do |i|
-          @reply_history[sname][i] = @reply_history[sname][i + 1]
+    if @reply_history.has_key?(sname) == false
+      @reply_history[sname] = [now]
+    else
+      if @reply_history[sname].length == 5
+        if now - @reply_history[sname][0] <= 3 * 60
+          should_reply = false
+        else
+          3.times do |i|
+            @reply_history[sname][i] = @reply_history[sname][i + 1]
+          end
+          @reply_history[sname].delete_at(-1)
+          @reply_history[sname].push(now)
         end
-        @reply_history[sname].delete_at(-1)
+      else
         @reply_history[sname].push(now)
       end
-    else
-      @reply_history[sname].push(now)
     end
     if should_reply == true
       if type == nil
@@ -276,7 +280,9 @@ class ComChang
       message = command(tweet)
       if message == 0 && should_reply?(tweet) == true
         type = save_tweet(tweet, "reply")
-        type = nil if @REG[type][1] =~ /markov/ || @REG[type][1] =~ /ohchinchin/
+        if type != nil && !(@REG[type][1] =~ /markov/ || @REG[type][1] =~ /ohchinchin/)
+          type = nil
+        end
         reply(tweet, type)
       elsif message == 1
         File::open("./state.txt", "w") do |file|
@@ -308,8 +314,8 @@ class ComChang
     
     # 初期化〜〜〜〜〜〜
     @user_id = user_id
-    # ↓[screen_name, リプライ送信時間(int)]の配列
-    @reply_history = []
+    # ↓key:screen_name, value:リプライ送信時間(int)の配列
+    @reply_history = {}
     @stream = TwitterSimpleStreamBot.new(config)
     @client = TwitterSimpleBot.new(config_rest)
     @user_num = @client.user.id
