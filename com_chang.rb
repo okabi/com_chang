@@ -3,6 +3,7 @@ require 'date'
 require_relative './twitter_simple_bot.rb'
 require_relative './twitter_simple_stream_bot.rb'
 require_relative './markov.rb'
+require_relative './markov3.rb'
 require_relative './markov_creator.rb'
 require_relative './sqlite_util.rb'
 
@@ -30,6 +31,8 @@ class ComChang
       if type == nil
         @markov0.store(text)
         @markov1.store(text)
+        @markov3d0.store(text)
+        @markov3d1.store(text)
       else
         puts "========================= #{@REG[type][0]} ========================="
         @special_word_markov[type].store(text) if @REG[type][1] =~ /markov/
@@ -96,7 +99,8 @@ class ComChang
 
 
   ## 反応ワードに応じた、ツイートすべき文を返す。
-  #  typeは@REGのIDnum。すなわち反応ワード。nilなら普通のマルコフ連鎖。
+  #  typeは@REGのIDnum。すなわち反応ワード。
+  #  nilなら普通のマルコフ連鎖。とりあえずしばらくは3次で様子見
   def create_special_text(type = nil)
     if type == nil
       yesterday = Time.now.to_i - (24 * 3600)
@@ -106,14 +110,18 @@ class ComChang
       if y_index != tbl_index
         if y_index == 0
           @markov0.delete
+          @markov3d0.delete
         else
           @markov1.delete
+          @markov3d1.delete
         end
       end
       if tbl_index == 0
-        return @markov0.create
+        # return @markov0.create
+        return @markov3d0.create
       else
-        return @markov1.create
+        # return @markov1.create
+        return @markov3d1.create
       end
     else
       if @REG[type][1] =~ /markov/
@@ -253,6 +261,8 @@ class ComChang
     @db_path = db_path
     @markov0 = Markov.new(@db_path, 'markov0_tbl')
     @markov1 = Markov.new(@db_path, 'markov1_tbl')
+    @markov3d0 = Markov.new(@db_path, 'markov3d0_tbl')
+    @markov3d1 = Markov.new(@db_path, 'markov3d1_tbl')
     date = Date.today.strftime("%Y%m")
     @tweet_tbl = "tweet#{date}_tbl"
     @db = SqliteUtil.new(@db_path, @tweet_tbl)
@@ -307,7 +317,8 @@ class ComChang
       p exception.message
       @stream.error_log(exception.message)
       begin
-        tweet("@okabi13 エラー発生した〜〜〜")
+        ## うるさいのでコメントアウトしとく
+        # tweet("@okabi13 エラー発生した〜〜〜")
       rescue
       end
     }
