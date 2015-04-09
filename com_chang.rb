@@ -71,7 +71,7 @@ class ComChang
     # 先頭のRT は消す
     text = text.gsub(/^RT /, "")
     # @hogeは消す
-    text = text.gsub(/@(\w)+/, "")
+    text = text.gsub(/@(\w)+(: )?/, "")
     # URLは消す
     text = text.gsub(/http(s)?:\/\/[\w.\/]+/, "")
     # &とかの文字を元に戻す
