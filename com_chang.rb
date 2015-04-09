@@ -261,8 +261,8 @@ class ComChang
     @db_path = db_path
     @markov0 = Markov.new(@db_path, 'markov0_tbl')
     @markov1 = Markov.new(@db_path, 'markov1_tbl')
-    @markov3d0 = Markov.new(@db_path, 'markov3d0_tbl')
-    @markov3d1 = Markov.new(@db_path, 'markov3d1_tbl')
+    @markov3d0 = Markov3.new(@db_path, 'markov3d0_tbl')
+    @markov3d1 = Markov3.new(@db_path, 'markov3d1_tbl')
     date = Date.today.strftime("%Y%m")
     @tweet_tbl = "tweet#{date}_tbl"
     @db = SqliteUtil.new(@db_path, @tweet_tbl)
