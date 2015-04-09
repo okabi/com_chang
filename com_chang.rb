@@ -104,9 +104,9 @@ class ComChang
   def create_special_text(type = nil)
     if type == nil
       yesterday = Time.now.to_i - (24 * 3600)
-      y_index = (yesterday % 14) / 7
+      y_index = (yesterday % 28) / 14
       today = Time.now.to_i / (24 * 3600)
-      tbl_index = (today % 14) / 7
+      tbl_index = (today % 28) / 14
       if y_index != tbl_index
         if y_index == 0
           @markov0.delete
